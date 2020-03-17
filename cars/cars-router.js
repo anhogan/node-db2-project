@@ -4,11 +4,11 @@ const db = require('../data/db');
 const router = express.Router();
 
 router.post('/', validateCar, uniqueVIN, (req, res) => {
-  db('cars').insert(req.body)
+  db('vehicles').insert(req.body)
     .then(id => {
-      db('cars').where({ id: id[0] })
+      db('vehicles').where({ id: id[0] })
         .then(newCar => {
-          res.status(201).json(newCar);
+          res.status(201).json({ data: newCar });
         })
         .catch(error => {
           console.log(error);
@@ -22,9 +22,9 @@ router.post('/', validateCar, uniqueVIN, (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  db('cars')
+  db('vehicles')
     .then(cars => {
-      res.status(200).json(cars);
+      res.status(200).json({ data: cars });
     })
     .catch(error => {
       console.log(error);
@@ -33,32 +33,50 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', validateId, (req, res) => {
-  db('cars').where({ id: req.params.id }).first()
+  db('vehicles').where({ id: req.params.id }).first()
     .then(car => {
-      res.status(200).json(car);
+      res.status(200).json({ data: car });
     })
     .catch(error => {
       console.log(error);
-      res.status(500).json({ message: "The car informatio could not be retrieved" });
+      res.status(500).json({ message: "The car information could not be retrieved" });
     });
 });
 
 router.delete('/:id', validateId, (req, res) => {
-  db('cars').where({ id: req.params.id }).first().del()
+  db('vehicles').where({ id: req.params.id }).first().del()
     .then(count => {
       if (count > 0) {
-        db('cars')
-      }
+        db('vehicles')
+          .then(cars => {
+            res.status(200).json({ data: cars });
+          })
+          .catch(error => {
+            console.log(error);
+            res.status(500).json({ message: "The car information could not be retrieved" });
+          });
+      };
     })
     .catch(error => {
-      console.log(error):
+      console.log(error);
       res.status(500).json({ message: "The car could not be deleted" });
     });
 });
 
 router.put('/:id', validateId, validateCar, uniqueVIN, (req, res) => {
-  db('cars').where({ id: req.params.id }).first()
-    .then()
+  db('vehicles').where({ id: req.params.id }).update(req.body)
+    .then(count => {
+      if (count > 0) {
+        db('vehicles').where({ id: req.params.id }).first()
+          .then(car => {
+            res.status(200).json({ data: car });
+          })
+          .catch(error => {
+            console.log(error);
+            res.status(500).json({ message: "The car information could not be retrieved" });
+          });
+      };
+    })
     .catch(error => {
       console.log(error);
       res.status(500).json({ message: "The car could not be updated" });
@@ -66,7 +84,7 @@ router.put('/:id', validateId, validateCar, uniqueVIN, (req, res) => {
 });
 
 function validateId(req, res, next) {
-  db('cars').where({ id: req.params.id }).first()
+  db('vehicles').where({ id: req.params.id }).first()
     .then(car => {
       if (!car) {
         res.status(404).json({ message: "Invalid car id" });
@@ -91,7 +109,7 @@ function validateCar(req, res, next) {
 };
 
 function uniqueVIN(req, res, next) {
-  db('cars')
+  db('vehicles')
     .then(cars => {
       const taken = cars.filter((car) => {
         return car.vin === req.body.vin
