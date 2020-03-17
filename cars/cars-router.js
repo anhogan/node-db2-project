@@ -63,7 +63,7 @@ router.delete('/:id', validateId, (req, res) => {
     });
 });
 
-router.put('/:id', validateId, validateCar, uniqueVIN, (req, res) => {
+router.put('/:id', validateId, uniqueVIN, (req, res) => {
   db('vehicles').where({ id: req.params.id }).update(req.body)
     .then(count => {
       if (count > 0) {
