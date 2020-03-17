@@ -45,7 +45,11 @@ router.get('/:id', validateId, (req, res) => {
 
 router.delete('/:id', validateId, (req, res) => {
   db('cars').where({ id: req.params.id }).first().del()
-    .then()
+    .then(count => {
+      if (count > 0) {
+        db('cars')
+      }
+    })
     .catch(error => {
       console.log(error):
       res.status(500).json({ message: "The car could not be deleted" });
@@ -54,6 +58,11 @@ router.delete('/:id', validateId, (req, res) => {
 
 router.put('/:id', validateId, validateCar, uniqueVIN, (req, res) => {
   db('cars').where({ id: req.params.id }).first()
+    .then()
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ message: "The car could not be updated" });
+    })
 });
 
 function validateId(req, res, next) {
